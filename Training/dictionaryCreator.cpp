@@ -9,8 +9,8 @@
 #include <opencv4/opencv2/videoio.hpp>
 #include <opencv4/opencv2/video.hpp>
 #include <opencv4/opencv2/xfeatures2d.hpp>
-#include<opencv4/opencv2/core/persistence.hpp>
-#include<opencv4/opencv2/core/types.hpp>
+#include <opencv4/opencv2/core/persistence.hpp>
+#include <opencv4/opencv2/core/types.hpp>
 
 #include "functions.h"
 
@@ -27,7 +27,6 @@ int main(int, char **)
 
     vector<KeyPoint> keypoints;
     Mat descriptor;
-    Mat featuresUnclustered;
     xfeatures2d::SiftDescriptorExtractor detector;
 
     //the number of bags
@@ -38,17 +37,22 @@ int main(int, char **)
     int retries = 1;
     //necessary flags
     int flags = KMEANS_PP_CENTERS;
-    
+
     //Getting all video filenames
     getFilesList(path, files, false);
     unsigned filesQnt = files->size();
 
     for (unsigned i = 0; i < filesQnt; i++)
     {
+        Mat featuresUnclustered, dictionary;
+        unsigned frameNumber = 0;
+
         cout << "Video " << i << "/" << filesQnt << endl;
         // Create a VideoCapture object and open the input file
         // If the input is the web camera, pass 0 instead of the video file name
         VideoCapture cap(files->at(i));
+
+        unsigned frameQnt = cap.get(CAP_PROP_FRAME_COUNT);
 
         // Check if camera opened successfully
         if (!cap.isOpened())
@@ -57,61 +61,40 @@ int main(int, char **)
             return -1;
         }
 
-        do
+        while (frameNumber < frameQnt)
         {
             Mat frame;
+
             // Capture frame-by-frame
             cap >> frame;
 
-            /*----- SIFT -----*/
-            // Detect
-            Ptr<Feature2D> f2d = xfeatures2d::SiftFeatureDetector::create();
-
-            //Detect feature points
-            f2d->detect(frame, keypoints);
-
-            //Compute the descriptors for each keypoint
-            f2d->compute(frame, keypoints, descriptor);
+            Ptr<Feature2D> f2d = xfeatures2d::SURF::create(dictionarySize);
+            f2d->detectAndCompute(frame, noArray(), keypoints, descriptor);
 
             //Put the all frame features descriptors in a single Mat object
             featuresUnclustered.push_back(descriptor);
 
-            /*-----BOF-----*/
-            // Construct BOWKMeansTrainer
-
             //Create the BoW (or BoF) trainer
             BOWKMeansTrainer bowTrainer(dictionarySize, tc, retries, flags);
             //cluster the feature vectors
-            Mat dictionary = bowTrainer.cluster(featuresUnclustered);
-            //store the vocabulary
-            FileStorage fs("dictionary.yml", FileStorage::APPEND);
-            fs << "vocabulary" << dictionary;
-            fs.release();
+            dictionary = bowTrainer.cluster(featuresUnclustered);
 
-        } while (!frame.empty());
+            cout << featuresUnclustered.size() << endl;
 
+            frameNumber++;
+        }
+
+        /*-----BOF-----*/
+        //store the vocabulary
+        FileStorage fs("dictionary.yml", FileStorage::APPEND);
+        fs << "vocabulary" << dictionary;
+        fs.release();
+        featuresUnclustered.release();
         cap.release();
-    }
 
-    cout << featuresUnclustered.size() << endl;
+        break;
+    }
 
     delete files;
     return 0;
 }
-// //Construct BOWKMeansTrainer
-// //the number of bags
-// int dictionarySize=200;
-// //define Term Criteria
-// TermCriteria tc(CV_TERMCRIT_ITER,100,0.001);
-// //retries number
-// int retries=1;
-// //necessary flags
-// int flags=KMEANS_PP_CENTERS;
-// //Create the BoW (or BoF) trainer
-// BOWKMeansTrainer bowTrainer(dictionarySize,tc,retries,flags);
-// //cluster the feature vectors
-// Mat dictionary=bowTrainer.cluster(featuresUnclustered);
-// //store the vocabulary
-// FileStorage fs("dictionary.yml", FileStorage::WRITE);
-// fs << "vocabulary" << dictionary;
-// fs.release();
