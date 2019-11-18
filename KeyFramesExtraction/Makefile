@@ -1,8 +1,8 @@
 CC = g++
 CFLAGS = -g -Wall
-SRCS = siftTest.cpp
-OBJS = siftTest.o
-PROG = siftTest
+SRCS = KeyFramesAnalysis.cpp main.cpp
+OBJS = KeyFramesAnalysis.o main.o
+PROG = main
 
 OPENCV = `pkg-config opencv4 --cflags --libs`
 LIBS = $(OPENCV)
