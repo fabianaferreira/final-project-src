@@ -1,6 +1,6 @@
 ## Graduation Final Project 
 
-Project being developed at Universidade Federal do Rio de Janeiro by Fabiana Ferreira Fonseca as the final project of the Electronic and Computer Engineering undergraduate degree.
+Project being developed at Universidade Federal do Rio de Janeiro by Fabiana Ferreira Fonseca as the final project of Electronic and Computer Engineering undergraduate degree.
 
 
 ### Setting up the environment
