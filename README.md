@@ -5,38 +5,18 @@ Project being developed at Universidade Federal do Rio de Janeiro by Fabiana Fer
 
 ### Setting up the environment
 
-It requires to have OpenCV 4+ with the extras modules (opencv_contrib) and CMake installed. If you dont't have CMake installed, you can use the following command:
-`sudo apt install cmake`
+It requires all the dependencis from conda, which are in ``environment.yml``. To create an environment based on the dependecy file that is in this repository, you can run the following command:
 
-* Cloning the repositories
-  
-    Clone [opencv](https://github.com/opencv/opencv) and [opencv extra modules](https://github.com/opencv/opencv_contrib) repositories
-    
-    `$ git clone https://github.com/opencv/opencv.git`
-    
-    `$ git clone https://github.com/opencv/opencv_contrib`
-    
-* Make sure that you have the correct dependencies
-    
-    `$ sudo apt-get update`
-    
-    `$ sudo apt install ubuntu-restricted-extras`
-    
-    `$ sudo apt-get install gtk+2.0`
-    
-* Building OpenCV
+```conda env create -f environment.yml```
 
-    Create a directory to build OpenCV
-    
-    ```
-    $ mkdir <opencv_build_directory>
-    $ cd <opencv_build_directory>
-    ```
+### Crawler
 
-    Use flags to enable non-free modules when using cmake
+WIP
 
-    ```
-    $ cmake -DOPENCV_GENERATE_PKGCONFIG=YES -DOPENCV_ENABLE_NONFREE=ON -DOPENCV_EXTRA_MODULES_PATH=<opencv_contrib>/modules <opencv_source_directory>
-    $ make -j5
-    $ sudo make install
-    ```
+### Key Frames Extraction
+
+WIP
+
+### Bag of Features
+
+WIP
