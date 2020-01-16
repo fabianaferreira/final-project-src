@@ -42,7 +42,7 @@ for n in ['5', '10', '15']:
     print('Number of keyframes: ' + n)
     for palavra, frameList in tqdm(proc_csv[f'files_list_{n}'].iteritems(), total=len(proc_csv)):
         if (len(frameList) < int(n)):
-            print(f"Word {palavra} got less than {n} key frames")
+            # print(f"Word {palavra} got less than {n} key frames")
             logging.warning(f"Word {palavra} got less than {n} key frames")
 
         seq = buildSequence(frameList)
