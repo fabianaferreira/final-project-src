@@ -6,6 +6,14 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.eps
+*.ipynb_checkpoints
+*.jpg
+*.pkl
+env/
+Crawler/Videos
+Crawler/CM
+.vscode/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
