@@ -10,17 +10,6 @@ logging.basicConfig(format='%(asctime)s [%(levelname)s] - %(message)s',
                     filename="/home/fabiana/Desktop/projeto-final-src/Classifier/InceptionV3Features.log",
                     filemode='a')
 
-
-def getFrameNumber(path):
-    return int(re.search(r".*\/frame(\d+)\.jpg", path).group(1))
-
-
-def getFiles(path):
-    files = list(glob(path + "/*.jpg"))
-    files.sort(key=getFrameNumber)
-    return files
-
-
 def buildSequence(frameList):
     sequence = []
     for image in frameList:
