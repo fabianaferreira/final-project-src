@@ -7,7 +7,7 @@ import re
 
 SUBSET = True
 
-path = "/home/fabiana/Desktop/projeto-final-src/Crawler/Videos/"
+path = "../KeyFramesExtraction/Result/"
 df = pd.read_csv('../Annotations/processedAnnotations_no_corrupted_videos.csv')
 count = df.groupby(['CM']).count()['palavra']
 threshold = 20
@@ -46,10 +46,8 @@ df['classe'] = df['classe'].astype('category')
 
 df = df[['palavra', 'classe']]
 
-
 df['first_letter'] = df['palavra'].map(lambda x: x[0])
-df['folder_path'] = path + df['first_letter'] + \
-                    '/' + df['palavra'] + f'/DEResult_{frames}/'
+df['folder_path'] = path + f'{frames}/' + df['first_letter'] + '/' + df['palavra'] + '/'
 
 # df['files_list'] = df['folder_path'].map(getFiles)
 df['files_list'] = df['folder_path'].map(lambda x: getFiles(x, True))
