@@ -23,6 +23,9 @@ def generate_plot(model_name):
     model = load_model(model_name)
 
     print('Creating an instance of DataGenerator for X_test and y_test...')
+    # Using image size as default so as to be able to use them in models that
+    # contains pre-trained networks that requires specific image size such
+    # as VGG and InceptionV3
     test_gen = DataGenerator(X_test, y_test, BATCH_SIZE)
 
     print('Predicting...')
