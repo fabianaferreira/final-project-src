@@ -12,7 +12,7 @@ df = pd.read_csv('../Annotations/processedAnnotations_no_corrupted_videos.csv')
 count = df.groupby(['CM']).count()['palavra']
 threshold = 20
 frames = 10
-cnn_dataset_path = "/home/fabiana/Desktop/projeto-final-src/Classifier/datasets/CNN"
+cnn_dataset_path = "./datasets/CNN"
 
 classes_subset = ['cg14', 'cg63', 'cg02', 'cg64', 'cg47', 'cg07', 'cg01']
 
@@ -23,6 +23,8 @@ def getFrameNumber(path):
 
 def getFiles(path, drop_edges=False):
     files = list(glob(path + "/*.jpg"))
+    if(len(files) == 0):
+        print(path)
     files.sort(key=getFrameNumber)
     if drop_edges:  # Remove the first and the last frames
         files.pop()  # Remove last

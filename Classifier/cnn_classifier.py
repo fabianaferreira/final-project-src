@@ -16,36 +16,34 @@ BATCH_SIZE = 64
 
 def createModel():
     model = Sequential()
-    model.add(
-        Conv2D(32, kernel_size=(3, 3), input_shape=(176, 240, 1), kernel_initializer='he_uniform'))
-    model.add(BatchNormalization())
+    model.add(Conv2D(32, kernel_size=(3, 3), input_shape=(176, 240, 1), kernel_initializer='he_uniform'))
     model.add(LeakyReLU())
+    model.add(BatchNormalization())
     model.add(MaxPooling2D((2, 2)))
     model.add(Dropout(0.25))
 
-    model.add(Conv2D(64, kernel_size=(3, 3), kernel_initializer='he_uniform'))
-    model.add(BatchNormalization())
-    model.add(LeakyReLU())
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+    #model.add(Conv2D(64, kernel_size=(3, 3), kernel_initializer='he_uniform'))
+    #model.add(BatchNormalization())
+    #model.add(LeakyReLU())
+    #model.add(MaxPooling2D(pool_size=(2, 2)))
+    #model.add(Dropout(0.25))
 
-    model.add(Conv2D(128, kernel_size=(3, 3), kernel_initializer='he_uniform'))
-    model.add(BatchNormalization())
+    model.add(Conv2D(64, kernel_size=(3, 3), kernel_initializer='he_uniform'))
     model.add(LeakyReLU())
+    model.add(BatchNormalization())
     model.add(MaxPooling2D((2, 2)))
     model.add(Dropout(0.4))
 
     model.add(Flatten())
 
     model.add(Dense(128, kernel_initializer='he_uniform'))
-    model.add(BatchNormalization())
     model.add(LeakyReLU())
     model.add(Dropout(0.3))
     model.add(Dense(7, activation='softmax'))
 
-    # sgd = SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
+    sgd = SGD(lr=1e-4, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy',
-                  optimizer='rmsprop',
+                  optimizer=sgd,
                   metrics=['accuracy'])
     return model
 
@@ -72,10 +70,14 @@ train_datagen = ImageDataGenerator(
     rescale=1. / 255,
     shear_range=0.3,
     zoom_range=0.3,
+    #featurewise_center=True,
+    samplewise_center=True,
     horizontal_flip=False,
     vertical_flip=False,
     validation_split=0.2
 )
+
+#train_datagen.fit()
 
 train_gen = train_datagen.flow_from_dataframe(
     dataframe=df_train,
@@ -102,7 +104,7 @@ validation_gen = train_datagen.flow_from_dataframe(
 
 # Defining callbacks
 # TODO: Check if folder exist and create them if not
-epochs_to_wait_for_improvement = 10
+epochs_to_wait_for_improvement = 20
 logging_path = './logs'
 models_path = './models'
 model_name = 'CNN_no_edge_frames_' + datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
@@ -112,13 +114,13 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=epochs_to_wait_for_i
 checkpoint = ModelCheckpoint(f'{models_path}/{model_name}.h5', monitor='val_loss', save_best_only=True, mode='min')
 csv_logger = CSVLogger(f'{logging_path}/{model_name}.log')
 
-callbacks = [early_stopping, checkpoint, csv_logger, print_weights]
+callbacks = [early_stopping, checkpoint, csv_logger]
 
 print('Training model... You should get a coffee...')
 # Fit the model
 print(model.summary())
 # print(model_name)
-# exit(1)
+#exit(1)
 model.fit_generator(
     generator=train_gen,
     steps_per_epoch=train_gen.samples // BATCH_SIZE,
@@ -128,7 +130,7 @@ model.fit_generator(
     validation_steps=validation_gen.samples // BATCH_SIZE,
     callbacks=callbacks,
     # class_weight=[12.39411284, 5.43687231, 11.48333333, 4.59194184, 9.109375, 5.06617647, 8.10588235]
-    class_weight=[2, 1, 2, 1, 1.5, 1, 1.5]
+    #class_weight=[2, 1, 2, 1, 1.5, 1, 1.5]
     # class_weight=[1.76699708, 0.7763886, 1.63858549, 0.65533498, 1.30395869,
     #               0.72539257, 1.15690616]
 )
