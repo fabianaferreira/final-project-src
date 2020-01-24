@@ -1,10 +1,11 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from datetime import datetime
 import itertools
 from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
 
 TEMPLATE_FIGNAME = 'confusion_matrix_' + datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
+PLOT_DIR = './Plots/'
 
 
 class ConfusionMatrix:
@@ -13,7 +14,7 @@ class ConfusionMatrix:
         self.cm = confusion_matrix(np.argmax(y_true, axis=1), np.argmax(y_pred, axis=1))
 
     def plotFigure(self, normalize=False, cmap=plt.get_cmap('Reds'),
-                   show_annotations=False, figsize=(12, 8), rotation=45):
+                   show_annotations=False, figsize=(12, 8), rotation=45, showfig=True, figname=TEMPLATE_FIGNAME):
         """
         This function prints and plots the confusion matrix.
         Normalization can be applied by setting `normalize=True`.
@@ -35,15 +36,16 @@ class ConfusionMatrix:
 
         f = plt.figure(figsize=figsize)
 
-        # Create an axes instance and ajust the subplot size
+        # Create an axes instance and adjust the subplot size
         ax = f.add_subplot(111)
         ax.set_aspect(1)
         f.subplots_adjust(left=leftmargin / figwidth, right=1 - rightmargin / figwidth, top=0.94, bottom=0.1)
 
-        res = ax.imshow(self.cm, interpolation='nearest', cmap=cmap)
+        if not normalize:
+            res = ax.imshow(self.cm, interpolation='nearest', cmap=cmap)
+            plt.colorbar(res)
 
         plt.title(title, fontdict={'fontsize': 18})
-        plt.colorbar(res)
         ax.set_xticks(range(len(self.classes)))
         ax.set_yticks(range(len(self.classes)))
         ax.set_xticklabels(self.classes, rotation=rotation, ha='right', fontdict={'fontsize': 12})
@@ -62,8 +64,9 @@ class ConfusionMatrix:
         plt.xlabel('Classe Predita\nacurácia={:0.4f}; erro de classificação={:0.4f}'.format(accuracy, misclass),
                    fontdict={'fontsize': 14})
 
-        plt.show()
-        plt.close(f)
-
-    def saveFigure(self, figname=TEMPLATE_FIGNAME, plot_dir='./Plots/'):
-        plt.savefig(plot_dir + figname + '.eps', format='eps', dpi=1200, bbox_inches='tight')
+        if showfig:
+            plt.show()
+            plt.close(f)
+        else:
+            plt.savefig(PLOT_DIR + figname + '.eps', format='eps', dpi=1200, bbox_inches='tight')
+            plt.close(f)
