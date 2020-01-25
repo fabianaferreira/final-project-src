@@ -1,11 +1,14 @@
 from DataGenerator import DataGenerator
 from ConfusionMatrix import ConfusionMatrix
+from sklearn.metrics import classification_report
 from tensorflow.keras.models import load_model
 import numpy as np
+import pandas as pd
 
 BATCH_SIZE = 64
 SUBSET = True
 MODELS_DIR_PATH = './models/'
+CONFUSION_MATRIX_DIR = './Confusion_Matrix/'
 
 
 def generate_plot(model_name):
@@ -32,10 +35,19 @@ def generate_plot(model_name):
     result = model.predict_generator(test_gen)
 
     fig_name = 'confusion_matrix_model_' + model_name.rsplit('/', 1)[1][:-3] + ('_subset' if SUBSET else '')
+    report_name = 'classification_report_' + model_name.rsplit('/', 1)[1][:-3] + ('_subset' if SUBSET else '')
     cm = ConfusionMatrix(labels, y_pred=y_test, y_true=result)
 
     print('Saving matrix...')
     cm.save_matrix(filename=fig_name)
+
+    print('Calculating other metrics...')
+    report = classification_report(y_true=result, y_pred=y_test, labels=labels, output_dict=True)
+    print(report)
+
+    print('Saving report...')
+    df = pd.DataFrame(report).transpose()
+    df.to_csv(CONFUSION_MATRIX_DIR + report_name + '.csv')
 
     # print('Saving plot...')
     # cm.plot_figure(normalize=True, show_annotations=True, save_fig=True, figname=fig_name)
