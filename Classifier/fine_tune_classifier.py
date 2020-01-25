@@ -58,7 +58,8 @@ train_datagen = ImageDataGenerator(
     rescale=1. / 255,
     shear_range=0.3,
     zoom_range=0.3,
-    # samplewise_center=True,
+    samplewise_center=True,
+    rotation=40,
     horizontal_flip=False,
     vertical_flip=False,
     validation_split=0.2
@@ -89,7 +90,7 @@ validation_gen = train_datagen.flow_from_dataframe(
 
 # Defining callbacks
 # TODO: Check if folder exist and create them if not
-epochs_to_wait_for_improvement = 20
+epochs_to_wait_for_improvement = 30
 logging_path = './logs'
 models_path = './models'
 model_name = 'fine_tune_VGG16_no_edge_frames_' + datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
@@ -99,10 +100,10 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=epochs_to_wait_for_i
 checkpoint = ModelCheckpoint(f'{models_path}/{model_name}.h5', monitor='val_loss', save_best_only=True, mode='min')
 csv_logger = CSVLogger(f'{logging_path}/{model_name}.log')
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
-                              patience=5, min_lr=1e-5)
+                              patience=10, min_lr=1e-5)
 
 # callbacks = [early_stopping, checkpoint, csv_logger]
-callbacks = [reduce_lr, checkpoint, csv_logger]
+callbacks = [reduce_lr, checkpoint, csv_logger, early_stopping]
 
 print('Training model... You should get a coffee...')
 # Fit the model
@@ -112,7 +113,7 @@ print(model.summary())
 model.fit_generator(
     generator=train_gen,
     steps_per_epoch=train_gen.samples // BATCH_SIZE,
-    epochs=300,
+    epochs=500,
     verbose=1,
     validation_data=validation_gen,
     validation_steps=validation_gen.samples // BATCH_SIZE,
