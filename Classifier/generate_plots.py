@@ -26,16 +26,20 @@ def generate_plot(model_name):
     # Using image size as default so as to be able to use them in models that
     # contains pre-trained networks that requires specific image size such
     # as VGG and InceptionV3
-    test_gen = DataGenerator(X_test, y_test, BATCH_SIZE)
+    test_gen = DataGenerator(X_test, y_test, BATCH_SIZE, img_rows=176, img_cols=240, channel=1)
 
     print('Predicting...')
     result = model.predict_generator(test_gen)
 
     fig_name = 'confusion_matrix_model_' + model_name.rsplit('/', 1)[1][:-3] + ('_subset' if SUBSET else '')
-    cm = ConfusionMatrix(y_test, result, labels)
-    print('Saving plot...')
-    cm.plotFigure(normalize=True, show_annotations=True, showfig=False, figname=fig_name)
+    cm = ConfusionMatrix(labels, y_pred=y_test, y_true=result)
+
+    print('Saving matrix...')
+    cm.save_matrix(filename=fig_name)
+
+    # print('Saving plot...')
+    # cm.plot_figure(normalize=True, show_annotations=True, save_fig=True, figname=fig_name)
 
 
-model = MODELS_DIR_PATH + 'CNN_no_edge_frames_2020-01-22-09:17:49.h5'
+model = MODELS_DIR_PATH + 'CNN_no_edge_frames_data_augmentation_2020_01_21_10:30.h5'
 generate_plot(model)
