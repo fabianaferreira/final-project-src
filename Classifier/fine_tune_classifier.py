@@ -103,7 +103,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
                               patience=10, min_lr=1e-5)
 
 # callbacks = [early_stopping, checkpoint, csv_logger]
-callbacks = [reduce_lr, checkpoint, csv_logger, early_stopping]
+callbacks = [reduce_lr, checkpoint, csv_logger]
 
 print('Training model... You should get a coffee...')
 # Fit the model
@@ -113,7 +113,7 @@ print(model.summary())
 model.fit_generator(
     generator=train_gen,
     steps_per_epoch=train_gen.samples // BATCH_SIZE,
-    epochs=500,
+    epochs=300,
     verbose=1,
     validation_data=validation_gen,
     validation_steps=validation_gen.samples // BATCH_SIZE,

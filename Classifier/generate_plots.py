@@ -1,6 +1,7 @@
 from DataGenerator import DataGenerator
 from ConfusionMatrix import ConfusionMatrix
 from sklearn.metrics import classification_report
+from tensorflow.keras.metrics import top_k_categorical_accuracy
 from tensorflow.keras.models import load_model
 import numpy as np
 import pandas as pd
@@ -29,7 +30,9 @@ def generate_plot(model_name):
     # Using image size as default so as to be able to use them in models that
     # contains pre-trained networks that requires specific image size such
     # as VGG and InceptionV3
-    test_gen = DataGenerator(X_test, y_test, BATCH_SIZE, img_rows=176, img_cols=240, channel=1)
+   
+   #test_gen = DataGenerator(X_test, y_test, BATCH_SIZE, img_rows=176, img_cols=240, channel=1)
+    test_gen = DataGenerator(X_test, y_test, BATCH_SIZE)
 
     print('Predicting...')
     result = model.predict_generator(test_gen)
@@ -42,16 +45,23 @@ def generate_plot(model_name):
     cm.save_matrix(filename=fig_name)
 
     print('Calculating other metrics...')
-    report = classification_report(y_true=result, y_pred=y_test, labels=labels, output_dict=True)
+    report = classification_report(target_names=labels, y_true=np.argmax(result, axis=1), y_pred=np.argmax(y_test, axis=1), output_dict=True)
     print(report)
 
     print('Saving report...')
     df = pd.DataFrame(report).transpose()
     df.to_csv(CONFUSION_MATRIX_DIR + report_name + '.csv')
 
+    print('Top 3 accuracy: ')
+    print(top_k_categorical_accuracy(np.argmax(y_test, axis=1).reshape(-1,1), np.argmax(result, axis=1).reshape(-1,1), k=2))
+
+
+#    print('Top 5 accuracy: ')
+#    print(top_k_categorical_accuracy(np.argmax(y_test, axis=1).reshape(-1,1), np.argmax(result, axis=1).reshape(-1,1), k=3))
+
     # print('Saving plot...')
     # cm.plot_figure(normalize=True, show_annotations=True, save_fig=True, figname=fig_name)
 
 
-model = MODELS_DIR_PATH + 'CNN_no_edge_frames_data_augmentation_2020_01_21_10:30.h5'
+model = MODELS_DIR_PATH + 'fine_tune_VGG16_no_edge_frames_2020-01-24-03:03:13.h5'
 generate_plot(model)
