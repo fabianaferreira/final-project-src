@@ -1,6 +1,5 @@
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Activation, Conv2D, Flatten, BatchNormalization, MaxPooling2D, \
-    LeakyReLU
+from tensorflow.keras.layers import Dense, Dropout, Conv2D, Flatten, BatchNormalization, MaxPooling2D
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, CSVLogger, LambdaCallback
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -9,35 +8,25 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 
-# from DataGenerator import DataGenerator
-
 BATCH_SIZE = 64
 
 
 def createModel():
     model = Sequential()
-    model.add(Conv2D(32, kernel_size=(3, 3), input_shape=(176, 240, 1), kernel_initializer='he_uniform'))
-    model.add(LeakyReLU())
+    model.add(
+        Conv2D(32, kernel_size=(3, 3), activation='elu', input_shape=(176, 240, 1), kernel_initializer='he_uniform'))
     model.add(BatchNormalization())
     model.add(MaxPooling2D((2, 2)))
     model.add(Dropout(0.25))
 
-    #model.add(Conv2D(64, kernel_size=(3, 3), kernel_initializer='he_uniform'))
-    #model.add(BatchNormalization())
-    #model.add(LeakyReLU())
-    #model.add(MaxPooling2D(pool_size=(2, 2)))
-    #model.add(Dropout(0.25))
-
-    model.add(Conv2D(64, kernel_size=(3, 3), kernel_initializer='he_uniform'))
-    model.add(LeakyReLU())
+    model.add(Conv2D(64, kernel_size=(3, 3), activation='elu', kernel_initializer='he_uniform'))
     model.add(BatchNormalization())
     model.add(MaxPooling2D((2, 2)))
     model.add(Dropout(0.4))
 
     model.add(Flatten())
 
-    model.add(Dense(128, kernel_initializer='he_uniform'))
-    model.add(LeakyReLU())
+    model.add(Dense(128, activation='elu', kernel_initializer='he_uniform'))
     model.add(Dropout(0.3))
     model.add(Dense(7, activation='softmax'))
 
@@ -60,24 +49,20 @@ model = createModel()
 y_train = np.argmax(y_train, axis=1).astype(str)
 y_test = np.argmax(y_test, axis=1).astype(str)
 
-# df_train = pd.concat([pd.DataFrame({'X': X_train}), pd.DataFrame(y_train)], axis=1)
-# df_test = pd.concat([pd.DataFrame({'X': X_test}), pd.DataFrame(y_test)], axis=1)
 df_train = pd.DataFrame({'X': X_train, 'y': y_train})
 df_test = pd.DataFrame({'X': X_test, 'y': y_test})
-# class_columns = [str(x) for x in (set(df_train.columns) - {'X'})]
 
 train_datagen = ImageDataGenerator(
     rescale=1. / 255,
     shear_range=0.3,
     zoom_range=0.3,
-    #featurewise_center=True,
     samplewise_center=True,
+    rotation_range=40,
     horizontal_flip=False,
     vertical_flip=False,
-    validation_split=0.2
+    validation_split=0.2,
+    fill_mode='nearest'
 )
-
-#train_datagen.fit()
 
 train_gen = train_datagen.flow_from_dataframe(
     dataframe=df_train,
@@ -99,9 +84,6 @@ validation_gen = train_datagen.flow_from_dataframe(
     color_mode='grayscale',
     subset='validation')
 
-# train_gen = DataGenerator(X_train, y_train, 64)
-# test_gen = DataGenerator(X_test, y_test, 64)
-
 # Defining callbacks
 # TODO: Check if folder exist and create them if not
 epochs_to_wait_for_improvement = 20
@@ -120,7 +102,7 @@ print('Training model... You should get a coffee...')
 # Fit the model
 print(model.summary())
 # print(model_name)
-#exit(1)
+# exit(1)
 model.fit_generator(
     generator=train_gen,
     steps_per_epoch=train_gen.samples // BATCH_SIZE,
@@ -130,12 +112,7 @@ model.fit_generator(
     validation_steps=validation_gen.samples // BATCH_SIZE,
     callbacks=callbacks,
     # class_weight=[12.39411284, 5.43687231, 11.48333333, 4.59194184, 9.109375, 5.06617647, 8.10588235]
-    #class_weight=[2, 1, 2, 1, 1.5, 1, 1.5]
-    # class_weight=[1.76699708, 0.7763886, 1.63858549, 0.65533498, 1.30395869,
-    #               0.72539257, 1.15690616]
+    # class_weight=[2, 1, 2, 1, 1.5, 1, 1.5]
+    class_weight=[1.76699708, 0.7763886, 1.63858549, 0.65533498, 1.30395869,
+                  0.72539257, 1.15690616]
 )
-
-# train_generator,
-#     steps_per_epoch = train_generator.samples // batch_size,
-#     validation_data = validation_generator,
-#     validation_steps = validation_generator.samples // batch_size,
