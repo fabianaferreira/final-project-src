@@ -52,16 +52,5 @@ def generate_plot(model_name):
     df = pd.DataFrame(report).transpose()
     df.to_csv(CONFUSION_MATRIX_DIR + report_name + '.csv')
 
-    print('Top 3 accuracy: ')
-    print(top_k_categorical_accuracy(np.argmax(y_test, axis=1).reshape(-1,1), np.argmax(result, axis=1).reshape(-1,1), k=2))
-
-
-#    print('Top 5 accuracy: ')
-#    print(top_k_categorical_accuracy(np.argmax(y_test, axis=1).reshape(-1,1), np.argmax(result, axis=1).reshape(-1,1), k=3))
-
-    # print('Saving plot...')
-    # cm.plot_figure(normalize=True, show_annotations=True, save_fig=True, figname=fig_name)
-
-
-model = MODELS_DIR_PATH + 'fine_tune_VGG16_no_edge_frames_2020-01-24-03:03:13.h5'
+model = MODELS_DIR_PATH + 'fine_tune_VGG16_no_edge_frames_2020-01-23-19:27:25.h5'
 generate_plot(model)
