@@ -19,9 +19,9 @@ class ConfusionMatrix:
 
     def save_matrix(self, filename=TEMPLATE_FIGNAME):
         np.save(CONFUSION_MATRIX_DIR + filename, self.cm)
-        
+
     def plot_figure(self, normalize=True, cmap=plt.get_cmap('Reds'),
-                    show_annotations=True, fig_size=(12, 8), rotation=45, fig_name=TEMPLATE_FIGNAME):
+                    show_annotations=True, fig_size=(12, 8), rotation=45, fig_name=TEMPLATE_FIGNAME, save_fig=False):
         """
         This function prints and plots the confusion matrix.
         Normalization can be applied by setting `normalize=True`.
@@ -49,7 +49,8 @@ class ConfusionMatrix:
         f.subplots_adjust(left=leftmargin / figwidth, right=1 - rightmargin / figwidth, top=0.94, bottom=0.1)
 
         res = ax.imshow(self.cm, interpolation='nearest', cmap=cmap)
-        f.colorbar(res)
+        cbar = f.colorbar(res)
+        cbar.ax.tick_params(labelsize=18)
 
         plt.title(title, fontdict={'fontsize': 22})
         ax.set_xticks(range(len(self.classes)))
@@ -73,14 +74,5 @@ class ConfusionMatrix:
                    fontdict={'fontsize': 18})
         plt.grid(b=False)
 
-#         fig = plt.gcf()
-        plt.savefig(PLOT_DIR + fig_name + '.eps', format='eps', dpi=1200, bbox_inches='tight')
-
-        
-#         if save_fig:
-#             plt.savefig(PLOT_DIR + fig_name + '.eps', format='eps', dpi=1200, bbox_inches='tight')
-#             plt.close(f)
-        
-        
-        
-
+        if save_fig:
+            plt.savefig(PLOT_DIR + fig_name + '.svg', format='svg', bbox_inches='tight')
