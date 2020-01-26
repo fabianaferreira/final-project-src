@@ -19,9 +19,9 @@ class ConfusionMatrix:
 
     def save_matrix(self, filename=TEMPLATE_FIGNAME):
         np.save(CONFUSION_MATRIX_DIR + filename, self.cm)
-
+        
     def plot_figure(self, normalize=True, cmap=plt.get_cmap('Reds'),
-                    show_annotations=True, fig_size=(12, 8), rotation=45, save_fig=False, fig_name=TEMPLATE_FIGNAME):
+                    show_annotations=True, fig_size=(12, 8), rotation=45, fig_name=TEMPLATE_FIGNAME):
         """
         This function prints and plots the confusion matrix.
         Normalization can be applied by setting `normalize=True`.
@@ -49,28 +49,38 @@ class ConfusionMatrix:
         f.subplots_adjust(left=leftmargin / figwidth, right=1 - rightmargin / figwidth, top=0.94, bottom=0.1)
 
         res = ax.imshow(self.cm, interpolation='nearest', cmap=cmap)
-        plt.colorbar(res)
+        f.colorbar(res)
 
-        plt.title(title, fontdict={'fontsize': 18})
+        plt.title(title, fontdict={'fontsize': 22})
         ax.set_xticks(range(len(self.classes)))
         ax.set_yticks(range(len(self.classes)))
-        ax.set_xticklabels(self.classes, rotation=rotation, ha='right', fontdict={'fontsize': 12})
-        ax.set_yticklabels(self.classes, fontdict={'fontsize': 12})
+        ax.set_xticklabels(self.classes, rotation=rotation, fontdict={'fontsize': 18})
+        ax.set_yticklabels(self.classes, fontdict={'fontsize': 18})
 
         if show_annotations:
             fmt = '.2f' if normalize else 'd'
             thresh = self.cm.max() / 2.
             for i, j in itertools.product(range(self.cm.shape[0]), range(self.cm.shape[1])):
                 ax.text(j, i, format(self.cm[i, j], fmt),
+                        fontdict={'fontsize': 16},
                         horizontalalignment="center",
+                        verticalalignment="center",
                         color="white" if self.cm[i, j] > thresh else "black")
 
         plt.tight_layout()
-        plt.ylabel('Classe Alvo', fontdict={'fontsize': 14})
+        plt.ylabel('Classe Alvo', fontdict={'fontsize': 18})
         plt.xlabel('Classe Predita\nacurácia={:0.4f}; erro de classificação={:0.4f}'.format(accuracy, misclass),
-                   fontdict={'fontsize': 14})
+                   fontdict={'fontsize': 18})
+        plt.grid(b=False)
 
-        plt.show()
-        if save_fig:
-            plt.savefig(PLOT_DIR + fig_name + '.eps', format='eps', dpi=1200, bbox_inches='tight')
-        plt.close(f)
+#         fig = plt.gcf()
+        plt.savefig(PLOT_DIR + fig_name + '.eps', format='eps', dpi=1200, bbox_inches='tight')
+
+        
+#         if save_fig:
+#             plt.savefig(PLOT_DIR + fig_name + '.eps', format='eps', dpi=1200, bbox_inches='tight')
+#             plt.close(f)
+        
+        
+        
+
