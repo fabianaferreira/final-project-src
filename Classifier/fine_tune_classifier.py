@@ -4,12 +4,17 @@ from tensorflow.keras.applications import VGG16
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, CSVLogger, LambdaCallback, ReduceLROnPlateau
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.metrics import top_k_categorical_accuracy
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
 
 BATCH_SIZE = 64
+
+
+def top_3_accuracy(y_true, y_pred):
+    return top_k_categorical_accuracy(y_true, y_pred, k=3)
 
 
 def createModel(img_rows=224, img_cols=224, channel=3, num_classes=None):
@@ -25,13 +30,13 @@ def createModel(img_rows=224, img_cols=224, channel=3, num_classes=None):
 
     model.add(base_model)
     model.add(Flatten())
-    model.add(Dense(512, kernel_initializer='he_uniform'))
+    model.add(Dense(512, activation='sigmoid', kernel_initializer='he_uniform'))
     model.add(Dropout(0.5))
     model.add(Dense(num_classes, activation='softmax'))
 
     # Learning rate is changed to 0.001
-    sgd = SGD(lr=0.001, decay=0, momentum=0.9, nesterov=True)
-    model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
+    # sgd = SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy', top_3_accuracy])
 
     return model
 
@@ -102,8 +107,8 @@ csv_logger = CSVLogger(f'{logging_path}/{model_name}.log')
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
                               patience=10, min_lr=1e-5)
 
-# callbacks = [early_stopping, checkpoint, csv_logger]
-callbacks = [reduce_lr, checkpoint, csv_logger]
+callbacks = [early_stopping, checkpoint, csv_logger]
+# callbacks = [reduce_lr, checkpoint, csv_logger]
 
 print('Training model... You should get a coffee...')
 # Fit the model
