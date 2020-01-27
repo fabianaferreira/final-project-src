@@ -1,6 +1,7 @@
 from DataGenerator import DataGenerator
 from sklearn.metrics import classification_report
 from tensorflow.keras.models import load_model
+from tensorflow.keras.metrics import top_k_categorical_accuracy
 import numpy as np
 import pandas as pd
 
@@ -11,11 +12,11 @@ METRICS_DIR = './Metrics/'
 LOGS_DIR = './logs/'
 
 
-def top_n_accuracy(y_true, y_pred, N=1):
-    top_n_ix = np.argpartition(y_pred, -N)[:, -N:]
-    is_y_in_topn = [y in top_n_ix[i, :] for i, y in enumerate(y_true)]
-    return np.sum(is_y_in_topn) / len(y_true)
+def top_2_accuracy(y_true, y_pred):
+    return top_k_categorical_accuracy(y_true, y_pred, k=2)
 
+def top_3_accuracy(y_true, y_pred):
+    return top_k_categorical_accuracy(y_true, y_pred, k=3)
 
 def generate_metrics(model_name):
     # Loading labels and data
@@ -29,7 +30,9 @@ def generate_metrics(model_name):
         y_test = np.load('./datasets/CNN/y_test_no_edge_frames.npy')
     # Loading model
     print('Loading model...')
-    model = load_model(model_name)
+    dependencies = {'top_2_accuracy': top_2_accuracy,
+                    'top_3_accuracy': top_3_accuracy}
+    model = load_model(model_name, custom_objects=dependencies)
 
     print('Creating an instance of DataGenerator for X_test and y_test...')
     # Using image size as default so as to be able to use them in models that
@@ -60,5 +63,5 @@ def generate_metrics(model_name):
     df.to_csv(METRICS_DIR + history_name + '.csv')
 
 
-model = MODELS_DIR_PATH + 'fine_tune_VGG16_no_edge_frames_2020-01-23-19:27:25.h5'
+model = MODELS_DIR_PATH + 'fine_tune_VGG16_no_edge_frames_2020-01-27-13:17:54.h5'
 generate_metrics(model)

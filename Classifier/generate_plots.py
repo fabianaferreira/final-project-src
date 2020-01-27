@@ -1,6 +1,7 @@
 from DataGenerator import DataGenerator
 from ConfusionMatrix import ConfusionMatrix
 from tensorflow.keras.models import load_model
+from tensorflow.keras.metrics import top_k_categorical_accuracy
 import numpy as np
 import pandas as pd
 
@@ -9,6 +10,12 @@ SUBSET = True
 MODELS_DIR_PATH = './models/'
 CONFUSION_MATRIX_DIR = './Confusion_Matrix/'
 
+
+def top_2_accuracy(y_true, y_pred):
+    return top_k_categorical_accuracy(y_true, y_pred, k=2)
+
+def top_3_accuracy(y_true, y_pred):
+    return top_k_categorical_accuracy(y_true, y_pred, k=3)
 
 def generate_plot(model_name):
     # Loading labels and data
@@ -22,7 +29,9 @@ def generate_plot(model_name):
         y_test = np.load('./datasets/CNN/y_test_no_edge_frames.npy')
     # Loading model
     print('Loading model...')
-    model = load_model(model_name)
+    dependencies = {'top_2_accuracy': top_2_accuracy,
+                    'top_3_accuracy': top_3_accuracy}
+    model = load_model(model_name, custom_objects=dependencies)
 
     print('Creating an instance of DataGenerator for X_test and y_test...')
     # Using image size as default so as to be able to use them in models that
@@ -52,5 +61,5 @@ def generate_plot(model_name):
     # df.to_csv(CONFUSION_MATRIX_DIR + report_name + '.csv')
 
 
-model = MODELS_DIR_PATH + 'fine_tune_VGG16_no_edge_frames_2020-01-23-19:27:25.h5'
+model = MODELS_DIR_PATH + 'fine_tune_VGG16_no_edge_frames_2020-01-27-13:17:54.h5'
 generate_plot(model)

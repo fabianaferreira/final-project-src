@@ -13,6 +13,9 @@ import pandas as pd
 BATCH_SIZE = 64
 
 
+def top_2_accuracy(y_true, y_pred):
+    return top_k_categorical_accuracy(y_true, y_pred, k=2)
+
 def top_3_accuracy(y_true, y_pred):
     return top_k_categorical_accuracy(y_true, y_pred, k=3)
 
@@ -30,13 +33,13 @@ def createModel(img_rows=224, img_cols=224, channel=3, num_classes=None):
 
     model.add(base_model)
     model.add(Flatten())
-    model.add(Dense(512, activation='sigmoid', kernel_initializer='he_uniform'))
+    model.add(Dense(512, activation='elu', kernel_initializer='he_uniform'))
     model.add(Dropout(0.5))
     model.add(Dense(num_classes, activation='softmax'))
 
     # Learning rate is changed to 0.001
-    # sgd = SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy', top_3_accuracy])
+    sgd = SGD(lr=0.001, decay=0, momentum=0.9, nesterov=True)
+    model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy', top_2_accuracy, top_3_accuracy])
 
     return model
 
@@ -64,7 +67,6 @@ train_datagen = ImageDataGenerator(
     shear_range=0.3,
     zoom_range=0.3,
     samplewise_center=True,
-    rotation_range=40,
     horizontal_flip=False,
     vertical_flip=False,
     validation_split=0.2
@@ -105,10 +107,10 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=epochs_to_wait_for_i
 checkpoint = ModelCheckpoint(f'{models_path}/{model_name}.h5', monitor='val_loss', save_best_only=True, mode='min')
 csv_logger = CSVLogger(f'{logging_path}/{model_name}.log')
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
-                              patience=10, min_lr=1e-5)
+                              patience=10, min_lr=1e-4)
 
-callbacks = [early_stopping, checkpoint, csv_logger]
-# callbacks = [reduce_lr, checkpoint, csv_logger]
+#callbacks = [early_stopping, checkpoint, csv_logger]
+callbacks = [reduce_lr, checkpoint, csv_logger]
 
 print('Training model... You should get a coffee...')
 # Fit the model
