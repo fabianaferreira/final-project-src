@@ -12,10 +12,10 @@ def plot_accuracy_loss(model_name, metric='accuracy', save_fig=False):
     elif metric == 'loss':
         title = 'Loss do Modelo'
         y_label = 'Loss'
-    elif metric == 'top2':
+    elif metric == 'top_2_accuracy':
         title = 'Acurácia Top-2 do Modelo'
         y_label = 'Acurácia'
-    elif metric == 'top3':
+    elif metric == 'top_3_accuracy':
         title = 'Acurácia Top-3 do Modelo'
         y_label = 'Acurácia'
 
