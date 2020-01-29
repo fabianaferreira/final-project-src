@@ -63,5 +63,5 @@ def generate_metrics(model_name):
     df.to_csv(METRICS_DIR + history_name + '.csv')
 
 
-model = MODELS_DIR_PATH + 'fine_tune_VGG16_no_edge_frames_2020-01-27-13:17:54.h5'
+model = MODELS_DIR_PATH + 'fine_tune_VGG16_no_edge_frames_2020-01-28-23:26:54.h5'
 generate_metrics(model)

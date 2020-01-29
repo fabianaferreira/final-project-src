@@ -1,6 +1,6 @@
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.optimizers import SGD
-from tensorflow.keras.applications import VGG16
+from tensorflow.keras.applications import VGG16, InceptionV3
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, CSVLogger, LambdaCallback, ReduceLROnPlateau
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -23,11 +23,9 @@ def top_3_accuracy(y_true, y_pred):
 def createModel(img_rows=224, img_cols=224, channel=3, num_classes=None):
     # Load the VGG model
     base_model = VGG16(weights='imagenet', include_top=False, input_shape=(img_rows, img_cols, channel))
+    #base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(img_rows, img_cols, channel))
 
-    # loop over all layers in the base model and freeze them so they will
-    # *not* be updated during the first training process
-    for layer in base_model.layers:
-        layer.trainable = False
+    base_model.trainable = False
 
     model = Sequential()
 
@@ -38,8 +36,8 @@ def createModel(img_rows=224, img_cols=224, channel=3, num_classes=None):
     model.add(Dense(num_classes, activation='softmax'))
 
     # Learning rate is changed to 0.001
-    sgd = SGD(lr=0.001, decay=0, momentum=0.9, nesterov=True)
-    model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy', top_2_accuracy, top_3_accuracy])
+    #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(optimizer='adadelta', loss='categorical_crossentropy', metrics=['accuracy', top_2_accuracy, top_3_accuracy])
 
     return model
 
@@ -56,11 +54,8 @@ model = createModel(num_classes=7)
 y_train = np.argmax(y_train, axis=1).astype(str)
 y_test = np.argmax(y_test, axis=1).astype(str)
 
-# df_train = pd.concat([pd.DataFrame({'X': X_train}), pd.DataFrame(y_train)], axis=1)
-# df_test = pd.concat([pd.DataFrame({'X': X_test}), pd.DataFrame(y_test)], axis=1)
 df_train = pd.DataFrame({'X': X_train, 'y': y_train})
 df_test = pd.DataFrame({'X': X_test, 'y': y_test})
-# class_columns = [str(x) for x in (set(df_train.columns) - {'X'})]
 
 train_datagen = ImageDataGenerator(
     rescale=1. / 255,
@@ -92,9 +87,6 @@ validation_gen = train_datagen.flow_from_dataframe(
     color_mode='rgb',
     subset='validation')
 
-# train_gen = DataGenerator(X_train, y_train, 64)
-# test_gen = DataGenerator(X_test, y_test, 64)
-
 # Defining callbacks
 # TODO: Check if folder exist and create them if not
 epochs_to_wait_for_improvement = 30
@@ -109,8 +101,8 @@ csv_logger = CSVLogger(f'{logging_path}/{model_name}.log')
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.4,
                               patience=10, min_lr=1e-4)
 
-#callbacks = [early_stopping, checkpoint, csv_logger]
-callbacks = [reduce_lr, checkpoint, csv_logger]
+callbacks = [early_stopping, checkpoint, csv_logger]
+#callbacks = [reduce_lr, checkpoint, csv_logger]
 
 print('Training model... You should get a coffee...')
 # Fit the model
@@ -120,7 +112,7 @@ print(model.summary())
 model.fit_generator(
     generator=train_gen,
     steps_per_epoch=train_gen.samples // BATCH_SIZE,
-    epochs=300,
+    epochs=500,
     verbose=1,
     validation_data=validation_gen,
     validation_steps=validation_gen.samples // BATCH_SIZE,
@@ -131,7 +123,3 @@ model.fit_generator(
                   0.72539257, 1.15690616]
 )
 
-# train_generator,
-#     steps_per_epoch = train_generator.samples // batch_size,
-#     validation_data = validation_generator,
-#     validation_steps = validation_generator.samples // batch_size,
