@@ -2,8 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def plot_accuracy_loss(model_name, metric='accuracy', save_fig=False):
-    history_file = './Metrics/history_' + model_name + '_subset.csv'
+def plot_accuracy_loss(model_name, metric='accuracy', save_fig=False, subset=True):
+    history_file = './Metrics/history_' + model_name + ('_subset.csv' if subset else '.csv')
     h = pd.read_csv(history_file)
 
     if metric == 'accuracy':

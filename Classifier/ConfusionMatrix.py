@@ -10,13 +10,13 @@ CONFUSION_MATRIX_DIR = './Confusion_Matrix/'
 
 
 class ConfusionMatrix:
-    def __init__(self, classes, y_true=None, y_pred=None, cm_file=None):
+    def __init__(self, classes, y_true=None, y_pred=None, cm_file=None, subset=True):
         self.classes = classes
         self.model_name = cm_file
         if cm_file is None:
             self.cm = confusion_matrix(np.argmax(y_true, axis=1), np.argmax(y_pred, axis=1))
         else:
-            self.cm = np.load(CONFUSION_MATRIX_DIR + 'confusion_matrix_model_' + cm_file + '_subset.npy', allow_pickle=True)
+            self.cm = np.load(CONFUSION_MATRIX_DIR + 'confusion_matrix_model_' + cm_file + ('_subset.npy' if subset else '.npy'), allow_pickle=True)
 
     def save_matrix(self, filename=TEMPLATE_FIGNAME):
         np.save(CONFUSION_MATRIX_DIR + filename, self.cm)
