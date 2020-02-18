@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 BATCH_SIZE = 64
+FRAMES = 5
 SUBSET = True
 MODELS_DIR_PATH = './models/'
 METRICS_DIR = './Metrics/'
@@ -21,13 +22,13 @@ def top_3_accuracy(y_true, y_pred):
 def generate_metrics(model_name):
     # Loading labels and data
     if SUBSET:
-        labels = np.load('./Plots/labels_CM_subset.npy', allow_pickle=True)
-        X_test = np.load('./datasets/CNN/X_test_no_edge_frames_subset.npy')
-        y_test = np.load('./datasets/CNN/y_test_no_edge_frames_subset.npy')
+        labels = np.load('./Plots/labels_new_subset.npy', allow_pickle=True)
+        X_test = np.load('./datasets/CNN/X_test_no_edge_frames_new_subset_' + str(FRAMES) + '.npy')
+        y_test = np.load('./datasets/CNN/y_test_no_edge_frames_new_subset_' + str(FRAMES) + '.npy')
     else:
-        labels = np.load('./Plots/labels_CM.npy', allow_pickle=True)
-        X_test = np.load('./datasets/CNN/X_test_no_edge_frames.npy')
-        y_test = np.load('./datasets/CNN/y_test_no_edge_frames.npy')
+        labels = np.load('./Plots/labels_CM_others.npy', allow_pickle=True)
+        X_test = np.load('./datasets/CNN/X_test_no_edge_frames_' + str(FRAMES) + '.npy')
+        y_test = np.load('./datasets/CNN/y_test_no_edge_frames_' + str(FRAMES) + '.npy')
     # Loading model
     print('Loading model...')
     dependencies = {'top_2_accuracy': top_2_accuracy,
@@ -47,12 +48,12 @@ def generate_metrics(model_name):
 
     aux_model_name = model_name.rsplit('/', 1)[1][:-3]
 
-    report_name = 'classification_report_' + aux_model_name + ('_subset' if SUBSET else '')
-    history_name = 'history_' + aux_model_name + ('_subset' if SUBSET else '')
+    report_name = 'classification_report_' + aux_model_name + '_' + str(FRAMES) + ('_subset' if SUBSET else '')
+    history_name = 'history_' + aux_model_name + '_' + str(FRAMES) + ('_subset' if SUBSET else '')
 
     print('Calculating other metrics...')
-    report = classification_report(target_names=labels, y_true=np.argmax(result, axis=1),
-                                   y_pred=np.argmax(y_test, axis=1), output_dict=True)
+    report = classification_report(target_names=labels, y_true=np.argmax(y_test, axis=1),
+                                   y_pred=np.argmax(result, axis=1), output_dict=True)
 
     print('Saving report...')
     df = pd.DataFrame(report).transpose()
@@ -63,5 +64,5 @@ def generate_metrics(model_name):
     df.to_csv(METRICS_DIR + history_name + '.csv')
 
 
-model = MODELS_DIR_PATH + 'fine_tune_VGG16_no_edge_frames_2020-01-28-23:26:54.h5'
+model = MODELS_DIR_PATH + 'fine_tune_VGG16_no_edge_frames_2020-02-16-19:46:21.h5'
 generate_metrics(model)

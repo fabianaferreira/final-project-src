@@ -6,12 +6,14 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, CSVLogger
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.metrics import top_k_categorical_accuracy
 from datetime import datetime
+from sklearn.utils import class_weight
 
 import numpy as np
 import pandas as pd
 
 BATCH_SIZE = 64
-
+FRAMES = 5
+SUBSET = True
 
 def top_2_accuracy(y_true, y_pred):
     return top_k_categorical_accuracy(y_true, y_pred, k=2)
@@ -36,26 +38,25 @@ def createModel(img_rows=224, img_cols=224, channel=3, num_classes=None):
     model.add(Dense(num_classes, activation='softmax'))
 
     # Learning rate is changed to 0.001
-    #sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    # sgd = SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(optimizer='adadelta', loss='categorical_crossentropy', metrics=['accuracy', top_2_accuracy, top_3_accuracy])
 
     return model
 
-
-# Loading data
-X_train = np.load('./datasets/CNN/X_train_no_edge_frames_subset.npy')
-X_test = np.load('./datasets/CNN/X_test_no_edge_frames_subset.npy')
-y_train = np.load('./datasets/CNN/y_train_no_edge_frames_subset.npy')
-y_test = np.load('./datasets/CNN/y_test_no_edge_frames_subset.npy')
-
+if SUBSET:
+    # Loading data
+    X_train = np.load('./datasets/CNN/X_train_no_edge_frames_new_subset_' + str(FRAMES) + '.npy')
+    y_train = np.load('./datasets/CNN/y_train_no_edge_frames_new_subset_' + str(FRAMES) + '.npy')
+else:
+    X_train = np.load('./datasets/CNN/X_train_no_edge_frames_' + str(FRAMES) + '.npy')
+    y_train = np.load('./datasets/CNN/y_train_no_edge_frames_' + str(FRAMES) + '.npy')
+  
 # Creating model
-model = createModel(num_classes=7)
+model = createModel(num_classes=4)
 
 y_train = np.argmax(y_train, axis=1).astype(str)
-y_test = np.argmax(y_test, axis=1).astype(str)
 
 df_train = pd.DataFrame({'X': X_train, 'y': y_train})
-df_test = pd.DataFrame({'X': X_test, 'y': y_test})
 
 train_datagen = ImageDataGenerator(
     rescale=1. / 255,
@@ -107,8 +108,11 @@ callbacks = [early_stopping, checkpoint, csv_logger]
 print('Training model... You should get a coffee...')
 # Fit the model
 print(model.summary())
-# print(model_name)
-# exit(1)
+
+class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+
+#exit(1)
+
 model.fit_generator(
     generator=train_gen,
     steps_per_epoch=train_gen.samples // BATCH_SIZE,
@@ -117,9 +121,6 @@ model.fit_generator(
     validation_data=validation_gen,
     validation_steps=validation_gen.samples // BATCH_SIZE,
     callbacks=callbacks,
-    # class_weight=[12.39411284, 5.43687231, 11.48333333, 4.59194184, 9.109375, 5.06617647, 8.10588235]
-    # class_weight=[2, 1, 2, 1, 1.5, 1, 1.5]
-    class_weight=[1.76699708, 0.7763886, 1.63858549, 0.65533498, 1.30395869,
-                  0.72539257, 1.15690616]
+    class_weight=class_weights
 )
 

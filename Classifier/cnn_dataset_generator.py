@@ -11,10 +11,19 @@ path = "../KeyFramesExtraction/Result/"
 df = pd.read_csv('../Annotations/processedAnnotations_no_corrupted_videos.csv')
 count = df.groupby(['CM']).count()['palavra']
 threshold = 20
-frames = 10
+frames = 5
 cnn_dataset_path = "./datasets/CNN"
 
-classes_subset = ['cg14', 'cg63', 'cg02', 'cg64', 'cg47', 'cg07', 'cg01']
+classes_subset = ['cg01', 'cg02', 'cg07', 'cg14', 'cg47', 'cg63', 'cg64']
+class_map = {
+    'cg01': 'group2',
+    'cg02': 'group2',
+    'cg07': 'group2',
+    'cg14': 'group3',
+    'cg47': 'group5',
+    'cg63': 'group1',
+    'cg64': 'group5'
+}
 
 
 def getFrameNumber(path):
@@ -44,6 +53,8 @@ if SUBSET:
     df = df.query('CM in @classes_subset')
 
 df['classe'] = df['CM'].map(replaceClass)
+if SUBSET: 
+    df['classe'] = df['classe'].map(lambda x: class_map[x])
 df['classe'] = df['classe'].astype('category')
 
 df = df[['palavra', 'classe']]
@@ -63,12 +74,13 @@ X_train_sum = np.array(X_train.sum())
 X_test_sum = np.array(X_test.sum())
 
 if SUBSET:
-    np.save(cnn_dataset_path + '/X_train_no_edge_frames_subset.npy', X_train_sum)
-    np.save(cnn_dataset_path + '/X_test_no_edge_frames_subset.npy', X_test_sum)
-    np.save(cnn_dataset_path + '/y_train_no_edge_frames_subset.npy', y_train)
-    np.save(cnn_dataset_path + '/y_test_no_edge_frames_subset.npy', y_test)
+    np.save('labels_new_subset.npy', np.unique(df['classe']))
+    np.save(cnn_dataset_path + '/X_train_no_edge_frames_new_subset_' + str(frames) + '.npy', X_train_sum)
+    np.save(cnn_dataset_path + '/X_test_no_edge_frames_new_subset_' + str(frames) + '.npy', X_test_sum)
+    np.save(cnn_dataset_path + '/y_train_no_edge_frames_new_subset_' + str(frames) + '.npy', y_train)
+    np.save(cnn_dataset_path + '/y_test_no_edge_frames_new_subset_' + str(frames) + '.npy', y_test)
 else:
-    np.save(cnn_dataset_path + '/X_train_no_edge_frames.npy', X_train_sum)
-    np.save(cnn_dataset_path + '/X_test_no_edge_frames.npy', X_test_sum)
-    np.save(cnn_dataset_path + '/y_train_no_edge_frames.npy', y_train)
-    np.save(cnn_dataset_path + '/y_test_no_edge_frames.npy', y_test)
+    np.save(cnn_dataset_path + '/X_train_no_edge_frames_' + str(frames) + '.npy', X_train_sum)
+    np.save(cnn_dataset_path + '/X_test_no_edge_frames_' + str(frames) + '.npy', X_test_sum)
+    np.save(cnn_dataset_path + '/y_train_no_edge_frames_' + str(frames) + '.npy', y_train)
+    np.save(cnn_dataset_path + '/y_test_no_edge_frames_' + str(frames) + '.npy', y_test)
