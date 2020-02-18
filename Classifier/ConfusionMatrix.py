@@ -10,18 +10,19 @@ CONFUSION_MATRIX_DIR = './Confusion_Matrix/'
 
 
 class ConfusionMatrix:
-    def __init__(self, classes, y_true=None, y_pred=None, cm_file=None):
+    def __init__(self, classes, y_true=None, y_pred=None, cm_file=None, subset=True):
         self.classes = classes
+        self.model_name = cm_file
         if cm_file is None:
             self.cm = confusion_matrix(np.argmax(y_true, axis=1), np.argmax(y_pred, axis=1))
         else:
-            self.cm = np.load(cm_file, allow_pickle=True)
+            self.cm = np.load(CONFUSION_MATRIX_DIR + 'confusion_matrix_model_' + cm_file + ('_subset.npy' if subset else '.npy'), allow_pickle=True)
 
     def save_matrix(self, filename=TEMPLATE_FIGNAME):
         np.save(CONFUSION_MATRIX_DIR + filename, self.cm)
 
     def plot_figure(self, normalize=True, cmap=plt.get_cmap('Reds'),
-                    show_annotations=True, fig_size=(12, 8), rotation=45, fig_name=TEMPLATE_FIGNAME, save_fig=False):
+                    show_annotations=True, fig_size=(12, 8), rotation=45, save_fig=False):
         """
         This function prints and plots the confusion matrix.
         Normalization can be applied by setting `normalize=True`.
@@ -75,4 +76,4 @@ class ConfusionMatrix:
         plt.grid(b=False)
 
         if save_fig:
-            plt.savefig(PLOT_DIR + fig_name + '.svg', format='svg', bbox_inches='tight')
+            plt.savefig(PLOT_DIR + 'confusion_matrix_model' + self.model_name + '_subset.svg', format='svg', bbox_inches='tight')
